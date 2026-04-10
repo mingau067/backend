@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 
 const app = express();
@@ -5,7 +6,7 @@ const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
 
-// ✅ ROTA PRINCIPAL (JSON CORRETO)
+// ROOT
 app.get("/", (req, res) => {
     res.json({
         status: "ok",
@@ -15,28 +16,45 @@ app.get("/", (req, res) => {
     });
 });
 
-// ✅ PING
+// PING
 app.get("/api/v1/ping", (req, res) => {
     res.send("OK");
 });
 
-// ✅ LOGIN (obrigatório)
+// LOGIN
 app.post("/user/login", (req, res) => {
     res.json({
         token: "fake_token",
         user: {
             id: "1",
-            username: ".gg/sgbase"
+            username: "Player"
         }
     });
 });
 
-// ✅ ONLINE CHECK
+// ONLINE CHECK
 app.get("/onlinecheck", (req, res) => {
     res.json({ online: true });
 });
 
-// 🚀 START (IMPORTANTE)
-app.listen(PORT, "0.0.0.0", () => {
+// 🔥 ESSENCIAL PRO JOGO
+app.get("/shared", (req, res) => {
+    res.json({});
+});
+
+// 🔥 CONFIG DO JOGO
+app.get("/user/config", (req, res) => {
+    res.json({});
+});
+
+// 🔥 BACKGROUND (resolve teu erro)
+app.get("/background", (req, res) => {
+    res.json({
+        background: "default"
+    });
+});
+
+// START
+app.listen(PORT, () => {
     console.log("Backend rodando na porta " + PORT);
 });
