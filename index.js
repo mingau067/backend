@@ -6,8 +6,7 @@ const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
 
-// ROOT
-app.get("/", (req, res) => {
+/app.get("/", (req, res) => {
     res.json({
         status: "ok",
         name: "Stumble Base Backend",
@@ -16,7 +15,7 @@ app.get("/", (req, res) => {
     });
 });
 
-// PING
+
 app.get("/api/v1/ping", (req, res) => {
     res.send("OK");
 });
@@ -32,22 +31,19 @@ app.post("/user/login", (req, res) => {
     });
 });
 
-// ONLINE CHECK
+
 app.get("/onlinecheck", (req, res) => {
     res.json({ online: true });
 });
 
-// 🔥 ESSENCIAL PRO JOGO
 app.get("/shared", (req, res) => {
     res.json({});
 });
 
-// 🔥 CONFIG DO JOGO
 app.get("/user/config", (req, res) => {
     res.json({});
 });
 
-// 🔥 BACKGROUND (resolve teu erro)
 app.get("/background", (req, res) => {
     res.json({
         background: "default"
