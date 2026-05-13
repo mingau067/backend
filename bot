@@ -1,0 +1,150 @@
+import discord
+from discord.ext import commands
+from discord import app_commands
+
+TOKEN = "MTQ5MDc3OTUwNDI0NTk5NzcxMA.Gk_IkZ.EHrxBBmSdTYr-E9soK7kv7vSjyWOyonEg2PiJc"
+
+intents = discord.Intents.default()
+intents.members = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# filas por modo
+filas = {
+    "block": [],
+    "lava": [],
+    "rush": []
+}
+
+# ---------------- READY ----------------
+@bot.event
+async def on_ready():
+    await bot.tree.sync()
+    print(f"Logado como {bot.user}")
+
+# ---------------- EMBED ----------------
+def criar_embed():
+    def formatar(lista):
+        return "\n".join([f"<@{u}>" for u in lista]) if lista else "Nenhum"
+
+    embed = discord.Embed(
+        title="1v1 (0.56) | YK APOSTAS",
+        description=(
+            f"💰 Valor: R$2,00\n\n"
+            f" **Block Dash**\n{formatar(filas['block'])}\n\n"
+            f" **Lava Land**\n{formatar(filas['lava'])}\n\n"
+            f" **Rush Hour**\n{formatar(filas['rush'])}"
+        ),
+        color=discord.Color.red()
+    )
+
+    embed.set_thumbnail(url="https://i.postimg.cc/K8C1dYBq/png-bro.png")
+    return embed
+
+# ---------------- VIEW PRINCIPAL ----------------
+class MainView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Block Dash", style=discord.ButtonStyle.primary)
+    async def block(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await entrar_fila(interaction, "block")
+
+    @discord.ui.button(label="Lava Land", style=discord.ButtonStyle.danger)
+    async def lava(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await entrar_fila(interaction, "lava")
+
+    @discord.ui.button(label="Rush Hour", style=discord.ButtonStyle.success)
+    async def rush(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await entrar_fila(interaction, "rush")
+
+    @discord.ui.button(label="Sair", style=discord.ButtonStyle.secondary)
+    async def sair(self, interaction: discord.Interaction, button: discord.ui.Button):
+        saiu = False
+
+        for modo in filas:
+            if interaction.user.id in filas[modo]:
+                filas[modo].remove(interaction.user.id)
+                saiu = True
+
+        if not saiu:
+            return await interaction.response.send_message(
+                "Você não está em nenhuma fila!",
+                ephemeral=True
+            )
+
+        await interaction.response.edit_message(embed=criar_embed(), view=self)
+
+# ---------------- ENTRAR FILA ----------------
+async def entrar_fila(interaction, modo):
+    fila = filas[modo]
+
+    if interaction.user.id in fila:
+        return await interaction.response.send_message(
+            "Você já está nessa fila!",
+            ephemeral=True
+        )
+
+    if len(fila) >= 2:
+        return await interaction.response.send_message(
+            "Fila cheia!",
+            ephemeral=True
+        )
+
+    fila.append(interaction.user.id)
+
+    await interaction.response.edit_message(embed=criar_embed(), view=MainView())
+
+    # 🔥 quando tiver 2 jogadores
+    if len(fila) == 2:
+        jogadores = fila.copy()  # salva os 2
+
+        await criar_ticket(interaction.guild, jogadores, modo)
+
+        fila.clear()  # limpa a fila corretamente
+
+# ---------------- CRIAR TICKET (SEM CATEGORIA) ----------------
+async def criar_ticket(guild, jogadores, modo):
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(view_channel=False)
+    }
+
+    for user_id in jogadores:
+        member = guild.get_member(user_id)
+        overwrites[member] = discord.PermissionOverwrite(
+            view_channel=True,
+            send_messages=True
+        )
+
+    canal = await guild.create_text_channel(
+        name=f"ticket-{modo}",
+        overwrites=overwrites
+    )
+
+    view = TicketView()
+
+    await canal.send(
+        f"🎫 Ticket criado para <@{jogadores[0]}> e <@{jogadores[1]}>\n"
+        f"⏳ Aguarde um administrador entrar no ticket.",
+        view=view
+    )
+
+# ---------------- BOTÃO FECHAR ----------------
+class TicketView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Fechar Ticket", style=discord.ButtonStyle.danger)
+    async def fechar(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.channel.delete()
+
+# ---------------- COMANDO ----------------
+@bot.tree.command(name="apostado", description="Criar painel de apostas")
+@app_commands.checks.has_permissions(administrator=True)
+async def apostado(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        embed=criar_embed(),
+        view=MainView()
+    )
+
+bot.run(TOKEN)
