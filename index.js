@@ -6,7 +6,8 @@ const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
 
-/app.get("/", (req, res) => {
+// Removi a barra extra que estava aqui antes do app.get
+app.get("/", (req, res) => {
     res.json({
         status: "ok",
         name: "YX League Backend",
@@ -14,7 +15,6 @@ app.use(express.json());
         message: "online"
     });
 });
-
 
 app.get("/api/v1/ping", (req, res) => {
     res.send("OK");
@@ -30,7 +30,6 @@ app.post("/user/login", (req, res) => {
         }
     });
 });
-
 
 app.get("/onlinecheck", (req, res) => {
     res.json({ online: true });
