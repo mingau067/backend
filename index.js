@@ -9,7 +9,7 @@ app.use(express.json());
 /app.get("/", (req, res) => {
     res.json({
         status: "ok",
-        name: "Stumble Base Backend",
+        name: "YX League Backend",
         version: "0.56",
         message: "online"
     });
