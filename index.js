@@ -26,7 +26,7 @@ app.post("/user/login", (req, res) => {
         token: "fake_token",
         user: {
             id: "1",
-            username: "Player"
+            username: "YXLeagueUser"
         }
     });
 });
