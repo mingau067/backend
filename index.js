@@ -6,7 +6,6 @@ const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
 
-// Removi a barra extra que estava aqui antes do app.get
 app.get("/", (req, res) => {
     res.json({
         status: "ok",
